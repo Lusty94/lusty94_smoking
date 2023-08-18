@@ -19,7 +19,7 @@ Config.DebugPoly = false
 
 
 Config.Blips = {
-    {title = 'Smoking Shop', colour = 5, id = 648, coords = vector3(172.19, -1336.0, 29.3), scale = 0.7, useblip = true}, -- BLIP FOR TACKLE SHOP
+    {title = 'Smoking Shop', colour = 5, id = 648, coords = vector3(172.19, -1336.0, 29.3), scale = 0.7, useblip = true}, -- BLIP FOR SMOKING SHOP
 }
 
 
@@ -50,6 +50,9 @@ Config.CoreSettings = {
         --use 'qb' for qb-shops
         --use 'jim' for jim-shops
     },
+    EventNames = {
+        HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
+    },
     Effects = {
 
         --CIGARETTES ONLY
@@ -63,6 +66,9 @@ Config.CoreSettings = {
         --VAPES AND CIGARETTES
         AddArmour = true, -- add armour from smoking
         ArmourAmount = math.random(5,10), -- if set to true then how much armour does the player gain?
+
+        RemoveStress = true, -- removes stress from smoking
+        RemoveStressAmount = math.random(5,10), -- if set to true then how much stress relief does the player get?
         
     },
 }

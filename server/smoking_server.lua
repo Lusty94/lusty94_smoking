@@ -98,7 +98,7 @@ AddEventHandler('onResourceStart', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then
       return
     end
-    print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>-- ^5Smoking V1.0.0 Started Successfully ^5--<^3!^5>--^7')
+    print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>-- ^5Smoking V1.1.0 Started Successfully ^5--<^3!^5>--^7')
 end)
 
 local function CheckVersion()

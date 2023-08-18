@@ -115,6 +115,9 @@ RegisterNetEvent('lusty94_smoking:client:SmokeCig', function()
                     if Config.CoreSettings.Effects.AddArmour then
                         AddArmourToPed(PlayerPedId(), Config.CoreSettings.Effects.ArmourAmount)
                     end
+                    if Config.CoreSettings.Effects.RemoveStress then
+                        TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
+                    end
             end, function() -- Cancel
                 ClearPedTasks(PlayerPedId())
                 DeleteEntity(prop)
@@ -189,6 +192,9 @@ RegisterNetEvent('lusty94_smoking:client:SmokeVape', function()
                     end
                     if Config.CoreSettings.Effects.AddArmour then
                         AddArmourToPed(PlayerPedId(), Config.CoreSettings.Effects.ArmourAmount)
+                    end
+                    if Config.CoreSettings.Effects.RemoveStress then
+                        TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
                     end
             end, function() -- Cancel
                 ClearPedTasks(PlayerPedId())
@@ -275,7 +281,7 @@ AddEventHandler('onResourceStop', function(resourceName) if resourceName ~= GetC
         return
     end
         exports['qb-target']:RemoveZone("Store")
-        print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>--^5Smoking V1.0.0 Stopped Successfully^5--<^3!^5>--^7')
+        print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>--^5Smoking V1.1.0 Stopped Successfully^5--<^3!^5>--^7')
 end)
 
 

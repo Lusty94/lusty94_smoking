@@ -1,38 +1,39 @@
 
 
-Lusty94_Smoking
+# Lusty94_Smoking
 
-A Simple smoking script for qb-core that gives the player a health buff / nerf and adds armour [all toggleable]
+# A Simple smoking script for qb-core that gives the player a health buff / nerf and adds armour [all toggleable]
 
-Moveable shop location to purchase smoking supplies
-Useable cigarette packets that gives the players a set amount of cigarettes
-Useable vape that requires juice to smoke - gives a health boost and adds armour [config file to edit]
-Useable cigarette that requires a lighter to smoke - removes a small bit of health and adds armour [config file to edit]
+- Moveable shop location to purchase smoking supplies
+- Useable cigarette packets that gives the players a set amount of cigarettes
+- Useable vape that requires juice to smoke - gives a health boost and adds armour [config file to edit]
+- Useable cigarette that requires a lighter to smoke - removes a small bit of health and adds armour [config file to edit]
 
-Item checks to prevent exploits and abuse
-
-Support for multiple scripts
+- Item checks to prevent exploits and abuse
 
 
-Notify
-
-qb-notify
-okokNotify
-mythic_notify
-boii_ui notify
-
-Targets
-
-qb-target
-ox_target
+# Support for multiple scripts
 
 
+``Notify``
 
-Insert files found in [images] to inventory/html/images
+- qb-notify
+- okokNotify
+- mythic_notify
+- boii_ui notify
+
+``Targets``
+
+- qb-target
+- ox_target
 
 
 
-Insert items to core/shared/items.lua [adjust weights to suit your server needs]
+# Insert files found in [images] to inventory/html/images
+
+
+
+# Insert items to core/shared/items.lua [adjust weights to suit your server needs]
 
 
 ```

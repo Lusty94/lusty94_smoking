@@ -12,26 +12,34 @@
 - Item checks to prevent exploits and abuse
 
 
-# Support for multiple scripts
+
+# Insert files found in [images] to inventory/html/images ox invent is web/images
 
 
-``Notify``
+## OX INVENTORY USERS - SUPPLIES SHOP
 
-- qb-notify
-- okokNotify
-- mythic_notify
-- boii_ui notify
-
-``Targets``
-
-- qb-target
-- ox_target
-
-
-
-# Insert files found in [images] to inventory/html/images
-
-
+- If you are using ox_inventory you must add this snippet below to ox_inventory/data/shops.lua for the supplies ped store to work correctly. 
+- IF YOU CHANGE PED MODEL IN CONFIG MAKE SURE YOU CHANGE PED MODEL IN THE SNIPPET BELOW ALSO
+``
+SmokingSupplies = {
+		name = 'Smoking Supplies',
+		inventory = {
+			{ name = 'redwoodpack', price = 250 },
+			{ name = 'yukonpack', price = 250 },
+			{ name = '69brandpack', price = 250 },
+			{ name = 'debonairepack', price = 250 },
+			{ name = 'lighter', price = 5 },
+			{ name = 'vape', price = 25 },
+			{ name = 'vapejuice', price = 25 },
+		},
+		locations = {
+			vec3(170.03, -1337.09, 29.3)
+		}, 
+		targets = {
+			{ loc = vec3(170.03, -1337.09, 29.3), length = 1.5, width = 1.5, heading = 100, minZ = 28.5, maxZ = 31.0, distance = 2 }
+		}
+	},
+``
 
 # Insert items to core/shared/items.lua [adjust weights to suit your server needs]
 

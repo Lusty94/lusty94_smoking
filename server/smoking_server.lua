@@ -1,29 +1,19 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-
+local InvType = Config.CoreSettings.Inventory.Type
 
 QBCore.Functions.CreateUseableItem("redwoodpack", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
-    TriggerClientEvent("lusty94_smoking:client:openPack", source)
-    Player.Functions.RemoveItem("redwoodpack", 1)
-        TriggerClientEvent("inventory:client:ItemBox", source, QBCore.Shared.Items["redwoodpack"], "remove")
+    TriggerClientEvent("lusty94_smoking:client:RedwoodPack", source)
 end)
-QBCore.Functions.CreateUseableItem("debonairepack", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
-    TriggerClientEvent("lusty94_smoking:client:openPack", source)
-    Player.Functions.RemoveItem("debonairepack", 1)
-        TriggerClientEvent("inventory:client:ItemBox", source, QBCore.Shared.Items["debonairepack"], "remove")
+QBCore.Functions.CreateUseableItem("debonairepack", function(source, item)   
+    TriggerClientEvent("lusty94_smoking:client:DebonairePack", source)
 end)
 QBCore.Functions.CreateUseableItem("69brandpack", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
-    TriggerClientEvent("lusty94_smoking:client:openPack", source)
-    Player.Functions.RemoveItem("69brandpack", 1)
-        TriggerClientEvent("inventory:client:ItemBox", source, QBCore.Shared.Items["69brandpack"], "remove")
+   
+    TriggerClientEvent("lusty94_smoking:client:69BrandPack", source)
 end)
 QBCore.Functions.CreateUseableItem("yukonpack", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
-    TriggerClientEvent("lusty94_smoking:client:openPack", source)
-    Player.Functions.RemoveItem("yukonpack", 1)
-        TriggerClientEvent("inventory:client:ItemBox", source, QBCore.Shared.Items["yukonpack"], "remove")
+   
+    TriggerClientEvent("lusty94_smoking:client:YukonPack", source)
 end)
 
 
@@ -37,13 +27,71 @@ QBCore.Functions.CreateUseableItem("vape", function(source, item)
 end)
 
 
-RegisterNetEvent('lusty94_smoking:server:OpenPack', function()
+
+
+
+
+
+
+RegisterNetEvent('lusty94_smoking:server:OpenRedwoodPack', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
 
+    if InvType == 'qb' then
+        Player.Functions.RemoveItem("redwoodpack", 1)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["redwoodpack"], "remove")
         Player.Functions.AddItem("cigs", 20)
         TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "add")
+    elseif InvType == 'ox' then
+        exports.ox_inventory:RemoveItem(src,"redwoodpack", 1)
+        exports.ox_inventory:AddItem(src,"cigs", 20)
+    end
 end)
+RegisterNetEvent('lusty94_smoking:server:OpenDebonairePack', function()
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+
+    if InvType == 'qb' then
+        Player.Functions.RemoveItem("debonairepack", 1)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["debonairepack"], "remove")
+        Player.Functions.AddItem("cigs", 20)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "add")
+    elseif InvType == 'ox' then
+        exports.ox_inventory:RemoveItem(src,"debonairepack", 1)
+        exports.ox_inventory:AddItem(src,"cigs", 20)
+    end
+end)
+RegisterNetEvent('lusty94_smoking:server:Open69BrandPack', function()
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+
+    if InvType == 'qb' then
+        Player.Functions.RemoveItem("69brandpack", 1)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["69brandpack"], "remove")
+        Player.Functions.AddItem("cigs", 20)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "add")
+    elseif InvType == 'ox' then
+        exports.ox_inventory:RemoveItem(src,"69brandpack", 1)
+        exports.ox_inventory:AddItem(src,"cigs", 20)
+    end
+end)
+RegisterNetEvent('lusty94_smoking:server:OpenYukonPack', function()
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+
+    if InvType == 'qb' then
+        Player.Functions.RemoveItem("yukonpack", 1)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["yukonpack"], "remove")
+        Player.Functions.AddItem("cigs", 20)
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "add")
+    elseif InvType == 'ox' then
+        exports.ox_inventory:RemoveItem(src,"yukonpack", 1)
+        exports.ox_inventory:AddItem(src,"cigs", 20)
+    end
+end)
+
+
+
 
 
 
@@ -80,17 +128,24 @@ RegisterNetEvent('lusty94_smoking:server:SmokeVape', function()
     local chance1 = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
 
     if chance1 >= chance then
-        Player.Functions.RemoveItem("vapejuice", 1)
-        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vapejuice"], "remove")
+        if InvType == 'qb' then
+            Player.Functions.RemoveItem("vapejuice", 1)
+            TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vapejuice"], "remove")
+        elseif InvType == 'ox' then
+            exports.ox_inventory:RemoveItem(src,"vapejuice", 1)
+        end
     end
 end)
 
 RegisterNetEvent('lusty94_smoking:server:SmokeCig', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-
+    if Invtype == 'qb' then
         Player.Functions.RemoveItem("cigs", 1)
         TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "remove")
+    elseif InvType == 'ox' then
+        exports.ox_inventory:RemoveItem(src,"cigs", 1)
+    end
 end)
 
 
@@ -98,7 +153,7 @@ AddEventHandler('onResourceStart', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then
       return
     end
-    print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>-- ^5Smoking V1.1.0 Started Successfully ^5--<^3!^5>--^7')
+    print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>-- ^5Smoking V1.2.0 Started Successfully ^5--<^3!^5>--^7')
 end)
 
 local function CheckVersion()

@@ -140,7 +140,7 @@ end)
 RegisterNetEvent('lusty94_smoking:server:SmokeCig', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    if Invtype == 'qb' then
+    if InvType == 'qb' then
         Player.Functions.RemoveItem("cigs", 1)
         TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "remove")
     elseif InvType == 'ox' then

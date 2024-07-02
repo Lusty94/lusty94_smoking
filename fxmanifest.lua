@@ -8,7 +8,7 @@ name "lusty94_smoking"
 
 description 'Smoking Activity Script For QB-Core'
 
-version '1.2.0'
+version '2.0.0'
 
 lua54 'yes'
 
@@ -24,10 +24,11 @@ server_scripts {
 
 shared_scripts { 
 	'shared/config.lua',
+    '@ox_lib/init.lua'
 }
 
 escrow_ignore {
-    'shared/config.lua',
-    'client/smoking_client.lua',
-    'server/smoking_server.lua',
+    'shared/**.lua',
+    'client/**.lua',
+    'server/**.lua',
 }

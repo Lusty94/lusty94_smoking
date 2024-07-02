@@ -1,7 +1,28 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local ShopType = Config.CoreSettings.Shop.Type
 local TargetType = Config.CoreSettings.Target.Type
+local NotifyType = Config.CoreSettings.Notify.Type
+local busy = false
 
+--notification function
+local function SendNotify(msg,type,time,title)
+    if NotifyType == nil then print("Lusty94_Smoking: NotifyType Not Set in Config.CoreSettings.Notify.Type!") return end
+    if not title then title = "Smoking" end
+    if not time then time = 5000 end
+    if not type then type = 'success' end
+    if not msg then print("Notification Sent With No Message.") return end
+    if NotifyType == 'qb' then
+        QBCore.Functions.Notify(msg,type,time)
+    elseif NotifyType == 'okok' then
+        exports['okokNotify']:Alert(title, msg, time, type, true)
+    elseif NotifyType == 'mythic' then
+        exports['mythic_notify']:DoHudText(type, msg)
+    elseif NotifyType == 'boii' then
+        exports['boii_ui']:notify(title, msg, type, time)
+    elseif NotifyType == 'ox' then
+        lib.notify({ title = title, description = msg, type = type, duration = time})
+    end
+end
 
 --blips
 CreateThread(function()
@@ -21,210 +42,49 @@ CreateThread(function()
 end)
 
 
---prop for cig packet
-local packetprop = GetHashKey('v_res_tt_cigs01')
-RequestModel(packetprop)
-while not HasModelLoaded(packetprop) do
-    Wait(0)
-    RequestModel(packetprop)
-end
-
---open pack of cigs
-RegisterNetEvent('lusty94_smoking:client:RedwoodPack', function()
-    local prop = CreateObject(packetprop, GetEntityCoords(PlayerPedId()), true, true, true)
-    AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0.01, -0.03, 2.0, 68.0, -32.0, true, true, false, false, 1, true)
-    QBCore.Functions.Progressbar("open_pack", "Opening Cigarette Pack", Config.CoreSettings.ProgressBar.OpenPack, false, true, {
-        disableMovement = false,
-        disableCarMovement = false,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-        animDict = "amb@prop_human_parking_meter@female@base",
-        anim = "base_female",
-        flags = 49,
-    }, {}, {}, function() -- Done
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Opened Pack of Cigarettes!", "success", Config.CoreSettings.Notify.SuccessLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Pack Opened!', ' Opened Pack of Cigarettes!', Config.CoreSettings.Notify.SuccessLength, 'success', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('success', 'Opened Pack of Cigarettes!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Pack Opened!', 'Opened Pack of Cigarettes!', 'success', Config.CoreSettings.Notify.SuccessLength)
-        end        
-        TriggerServerEvent('lusty94_smoking:server:OpenRedwoodPack')
-    end, function() -- Cancel
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Cancelled!", "error", Config.CoreSettings.Notify.ErrorLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Cancelled!', ' Cancelled!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('error', 'Cancelled!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Cancelled!', 'Cancelled!', 'error', Config.CoreSettings.Notify.ErrorLength)
+--open cig packs
+RegisterNetEvent('lusty94_smoking:client:OpenPack', function(itemName)
+    QBCore.Functions.TriggerCallback('lusty94_smoking:get:CigPacks', function(HasItems)  
+        if HasItems then
+            if busy then
+                SendNotify("You Are Already Doing Something!", 'error', 2000)
+            else
+                busy = true
+                LockInventory(true)
+                if lib.progressCircle({ duration = Config.CoreSettings.Timers.OpenPack, label = 'Opening pack of cigs...', position = 'bottom', useWhileDead = false, canCancel = true, disable = { car = true, }, anim = { dict = 'amb@prop_human_parking_meter@female@base', clip = 'base_female', flag = 49, }, prop = { model = 'v_res_tt_cigs01', bone = 57005, pos = vec3(0.14, 0.01, -0.03), rot = vec3(2.0, 68.0, -32.0),},}) then
+                    busy = false
+                    LockInventory(false)
+                    ClearPedTasks(PlayerPedId())
+                    TriggerServerEvent("lusty94_smoking:server:OpenPack", itemName)
+                    SendNotify("You opened a pack of cigarettes!", 'success', 2000)
+                else 
+                    busy = false
+                    LockInventory(false)
+                    ClearPedTasks(PlayerPedId())
+                    SendNotify("Action Cancelled!", 'success', 2000)
+                end
+            end
+        else
+            SendNotify("You dont have any cigarette packets to open!", 'error', 2500)
         end
     end)
 end)
-RegisterNetEvent('lusty94_smoking:client:DebonairePack', function()
-    local prop = CreateObject(packetprop, GetEntityCoords(PlayerPedId()), true, true, true)
-    AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0.01, -0.03, 2.0, 68.0, -32.0, true, true, false, false, 1, true)
-    QBCore.Functions.Progressbar("open_pack", "Opening Cigarette Pack", Config.CoreSettings.ProgressBar.OpenPack, false, true, {
-        disableMovement = false,
-        disableCarMovement = false,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-        animDict = "amb@prop_human_parking_meter@female@base",
-        anim = "base_female",
-        flags = 49,
-    }, {}, {}, function() -- Done
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Opened Pack of Cigarettes!", "success", Config.CoreSettings.Notify.SuccessLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Pack Opened!', ' Opened Pack of Cigarettes!', Config.CoreSettings.Notify.SuccessLength, 'success', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('success', 'Opened Pack of Cigarettes!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Pack Opened!', 'Opened Pack of Cigarettes!', 'success', Config.CoreSettings.Notify.SuccessLength)
-        end        
-        TriggerServerEvent('lusty94_smoking:server:OpenDebonairePack')
-    end, function() -- Cancel
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Cancelled!", "error", Config.CoreSettings.Notify.ErrorLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Cancelled!', ' Cancelled!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('error', 'Cancelled!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Cancelled!', 'Cancelled!', 'error', Config.CoreSettings.Notify.ErrorLength)
-        end
-    end)
-end)
-RegisterNetEvent('lusty94_smoking:client:69BrandPack', function()
-    local prop = CreateObject(packetprop, GetEntityCoords(PlayerPedId()), true, true, true)
-    AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0.01, -0.03, 2.0, 68.0, -32.0, true, true, false, false, 1, true)
-    QBCore.Functions.Progressbar("open_pack", "Opening Cigarette Pack", Config.CoreSettings.ProgressBar.OpenPack, false, true, {
-        disableMovement = false,
-        disableCarMovement = false,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-        animDict = "amb@prop_human_parking_meter@female@base",
-        anim = "base_female",
-        flags = 49,
-    }, {}, {}, function() -- Done
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Opened Pack of Cigarettes!", "success", Config.CoreSettings.Notify.SuccessLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Pack Opened!', ' Opened Pack of Cigarettes!', Config.CoreSettings.Notify.SuccessLength, 'success', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('success', 'Opened Pack of Cigarettes!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Pack Opened!', 'Opened Pack of Cigarettes!', 'success', Config.CoreSettings.Notify.SuccessLength)
-        end        
-        TriggerServerEvent('lusty94_smoking:server:Open69BrandPack')
-    end, function() -- Cancel
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Cancelled!", "error", Config.CoreSettings.Notify.ErrorLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Cancelled!', ' Cancelled!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('error', 'Cancelled!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Cancelled!', 'Cancelled!', 'error', Config.CoreSettings.Notify.ErrorLength)
-        end
-    end)
-end)
-RegisterNetEvent('lusty94_smoking:client:YukonPack', function()
-    local prop = CreateObject(packetprop, GetEntityCoords(PlayerPedId()), true, true, true)
-    AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0.01, -0.03, 2.0, 68.0, -32.0, true, true, false, false, 1, true)
-    QBCore.Functions.Progressbar("open_pack", "Opening Cigarette Pack", Config.CoreSettings.ProgressBar.OpenPack, false, true, {
-        disableMovement = false,
-        disableCarMovement = false,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-        animDict = "amb@prop_human_parking_meter@female@base",
-        anim = "base_female",
-        flags = 49,
-    }, {}, {}, function() -- Done
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Opened Pack of Cigarettes!", "success", Config.CoreSettings.Notify.SuccessLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Pack Opened!', ' Opened Pack of Cigarettes!', Config.CoreSettings.Notify.SuccessLength, 'success', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('success', 'Opened Pack of Cigarettes!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Pack Opened!', 'Opened Pack of Cigarettes!', 'success', Config.CoreSettings.Notify.SuccessLength)
-        end        
-        TriggerServerEvent('lusty94_smoking:server:OpenYukonPack')
-    end, function() -- Cancel
-        ClearPedTasks(PlayerPedId())
-        DeleteEntity(prop)
-        if Config.CoreSettings.Notify.Type == 'qb' then
-            QBCore.Functions.Notify("Cancelled!", "error", Config.CoreSettings.Notify.ErrorLength)
-        elseif Config.CoreSettings.Notify.Type == 'okok' then
-            exports['okokNotify']:Alert('Cancelled!', ' Cancelled!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.UseSound)
-        elseif Config.CoreSettings.Notify.Type == 'mythic' then
-            exports['mythic_notify']:DoHudText('error', 'Cancelled!')
-        elseif Config.CoreSettings.Notify.Type == 'boii' then
-            exports['boii_ui']:notify('Cancelled!', 'Cancelled!', 'error', Config.CoreSettings.Notify.ErrorLength)
-        end
-    end)
-end)
-
-
-
---prop for cig
-local cigprop = GetHashKey('prop_cs_ciggy_01')
-RequestModel(cigprop)
-while not HasModelLoaded(cigprop) do
-    Wait(0)
-    RequestModel(cigprop)
-end
 
 --smoke cig
 RegisterNetEvent('lusty94_smoking:client:SmokeCig', function()
-    QBCore.Functions.TriggerCallback('lusty94_smoking:get:Cigs', function(HasItems)  
+    QBCore.Functions.TriggerCallback('lusty94_smoking:get:CigPacks', function(HasItems)  
         if HasItems then
-            local prop = CreateObject(cigprop, GetEntityCoords(PlayerPedId()), true, true, true)
-            AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, false, 1, true) 
-            QBCore.Functions.Progressbar("smoke_cig", "Smoking A Cigarette", Config.CoreSettings.ProgressBar.SmokeCig, false, true, {
-                disableMovement = false,
-                disableCarMovement = false,
-                disableMouse = false,
-                disableCombat = true,
-            }, {
-                animDict = "amb@world_human_aa_smoke@male@idle_a",
-                anim = "idle_c",
-                flags = 49,
-            }, {}, {}, function() -- Done
-                ClearPedTasks(PlayerPedId())
-                DeleteEntity(prop)
-                if Config.CoreSettings.Notify.Type == 'qb' then
-                    QBCore.Functions.Notify("You Lit A Cigarette!", "success", Config.CoreSettings.Notify.SuccessLength)
-                elseif Config.CoreSettings.Notify.Type == 'okok' then
-                    exports['okokNotify']:Alert('Cigarette Lit!', ' You Lit A Cigarette!', Config.CoreSettings.Notify.SuccessLength, 'success', Config.CoreSettings.Notify.UseSound)
-                elseif Config.CoreSettings.Notify.Type == 'mythic' then
-                    exports['mythic_notify']:DoHudText('success', 'You Lit A Cigarette!')
-                elseif Config.CoreSettings.Notify.Type == 'boii' then
-                    exports['boii_ui']:notify('Cigarette Lit!', 'You Lit A Cigarette!', 'success', Config.CoreSettings.Notify.SuccessLength)
-                end        
-                TriggerServerEvent('lusty94_smoking:server:SmokeCig')
+            if busy then
+                SendNotify("You Are Already Doing Something!", 'error', 2000)
+            else
+                busy = true
+                LockInventory(true)
+                if lib.progressCircle({ duration = Config.CoreSettings.Timers.SmokeCig, label = 'Smoking cigarette...', position = 'bottom', useWhileDead = false, canCancel = true, disable = { car = true, }, anim = { dict = 'amb@world_human_aa_smoke@male@idle_a', clip = 'idle_c', flag = 49, }, prop = { model = 'prop_cs_ciggy_01', bone = 28422, pos = vec3(0.0, 0.0, 0.0), rot = vec3(0.0, 0.0, 0.0),},}) then
+                    busy = false
+                    LockInventory(false)
+                    ClearPedTasks(PlayerPedId())
+                    TriggerServerEvent('lusty94_smoking:server:SmokeCig')
+                    SendNotify("You smoked a cig!", 'success', 2000)
                     if Config.CoreSettings.Effects.RemoveHealth then
                         SetEntityHealth(PlayerPedId(), GetEntityHealth(PlayerPedId()) - Config.CoreSettings.Effects.HealthAmount)
                     end
@@ -234,75 +94,35 @@ RegisterNetEvent('lusty94_smoking:client:SmokeCig', function()
                     if Config.CoreSettings.Effects.RemoveStress then
                         TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
                     end
-            end, function() -- Cancel
-                ClearPedTasks(PlayerPedId())
-                DeleteEntity(prop)
-                if Config.CoreSettings.Notify.Type == 'qb' then
-                    QBCore.Functions.Notify("Cancelled!", "error", Config.CoreSettings.Notify.ErrorLength)
-                elseif Config.CoreSettings.Notify.Type == 'okok' then
-                    exports['okokNotify']:Alert('Cancelled!', ' Cancelled!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.UseSound)
-                elseif Config.CoreSettings.Notify.Type == 'mythic' then
-                    exports['mythic_notify']:DoHudText('error', 'Cancelled!')
-                elseif Config.CoreSettings.Notify.Type == 'boii' then
-                    exports['boii_ui']:notify('Cancelled!', 'Cancelled!', 'error', Config.CoreSettings.Notify.ErrorLength)
+                else 
+                    busy = false
+                    LockInventory(false)
+                    ClearPedTasks(PlayerPedId())
+                    SendNotify("Action Cancelled!", 'success', 2000)
                 end
-            end)
-        else
-            if Config.CoreSettings.Notify.Type == 'qb' then
-                QBCore.Functions.Notify("You Cant Smoke Without A Lighter!", "error", Config.CoreSettings.Notify.ErrorLength)
-            elseif Config.CoreSettings.Notify.Type == 'okok' then
-                exports['okokNotify']:Alert('Missing Items','You Cant Smoke Without A Lighter!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.Sound) 
-            elseif Config.CoreSettings.Notify.Type == 'mythic' then
-                exports['mythic_notify']:DoHudText('error', 'You Cant Smoke Without A Lighter!')
-            elseif Config.CoreSettings.Notify.Type == 'boii' then
-                exports['boii_ui']:notify('Missing Items', 'You Cant Smoke Without A Lighter!', 'error', Config.CoreSettings.Notify.ErrorLength)
             end
+        else
+            SendNotify("You cant smoke without a cigarette or a lighter!", 'error', 2500)
         end
     end)
 end)
-
-
-
-
-
-
---prop for vape
-local vapeprop = GetHashKey('ba_prop_battle_vape_01')
-RequestModel(vapeprop)
-while not HasModelLoaded(vapeprop) do
-    Wait(0)
-    RequestModel(vapeprop)
-end
 
 
 --smoke vape
 RegisterNetEvent('lusty94_smoking:client:SmokeVape', function()
     QBCore.Functions.TriggerCallback('lusty94_smoking:get:Vape', function(HasItems)  
         if HasItems then
-           local prop = CreateObject(vapeprop, GetEntityCoords(PlayerPedId()), true, true, true)
-            AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 28422), -0.0290, 0.0070, -0.0050, 91.0, 270.0, -360.0, true, true, false, false, 1, true)
-            QBCore.Functions.Progressbar("smoke_vape", "Smoking A Vape", Config.CoreSettings.ProgressBar.SmokeVape, false, true, {
-                disableMovement = false,
-                disableCarMovement = false,
-                disableMouse = false,
-                disableCombat = true,
-            }, {
-                animDict = "amb@world_human_smoking@male@male_b@base",
-                anim = "base",
-                flags = 49,
-            }, {}, {}, function() -- Done
-                ClearPedTasks(PlayerPedId())
-                DeleteEntity(prop)
-                if Config.CoreSettings.Notify.Type == 'qb' then
-                    QBCore.Functions.Notify("You Smoked A Vape!", "success", Config.CoreSettings.Notify.SuccessLength)
-                elseif Config.CoreSettings.Notify.Type == 'okok' then
-                    exports['okokNotify']:Alert('Vaped!', ' You Smoked A Vape!', Config.CoreSettings.Notify.SuccessLength, 'success', Config.CoreSettings.Notify.UseSound)
-                elseif Config.CoreSettings.Notify.Type == 'mythic' then
-                    exports['mythic_notify']:DoHudText('success', 'You Smoked A Vape!')
-                elseif Config.CoreSettings.Notify.Type == 'boii' then
-                    exports['boii_ui']:notify('Vaped!', 'You Smoked A Vape!', 'success', Config.CoreSettings.Notify.SuccessLength)
-                end        
-                TriggerServerEvent('lusty94_smoking:server:SmokeVape')
+            if busy then
+                SendNotify("You Are Already Doing Something!", 'error', 2000)
+            else
+                busy = true
+                LockInventory(true)
+                if lib.progressCircle({ duration = Config.CoreSettings.Timers.SmokeVape, label = 'Smoking vape...', position = 'bottom', useWhileDead = false, canCancel = true, disable = { car = true, }, anim = { dict = 'amb@world_human_smoking@male@male_b@base', clip = 'base', flag = 49, }, prop = { model = 'ba_prop_battle_vape_01', bone = 28422, pos = vec3(-0.029, 0.007, -0.005), rot = vec3(91.0, 270.0, -360.0),},}) then
+                    busy = false
+                    LockInventory(false)
+                    ClearPedTasks(PlayerPedId())
+                    TriggerServerEvent('lusty94_smoking:server:SmokeVape')
+                    SendNotify("You smoked a vape!", 'success', 2000)
                     if Config.CoreSettings.Effects.AddHealth then
                         SetEntityHealth(PlayerPedId(), GetEntityHealth(PlayerPedId()) + Config.CoreSettings.Effects.VapeHealthAmount)
                     end
@@ -312,29 +132,15 @@ RegisterNetEvent('lusty94_smoking:client:SmokeVape', function()
                     if Config.CoreSettings.Effects.RemoveStress then
                         TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
                     end
-            end, function() -- Cancel
-                ClearPedTasks(PlayerPedId())
-                DeleteEntity(prop)
-                if Config.CoreSettings.Notify.Type == 'qb' then
-                    QBCore.Functions.Notify("Cancelled!", "error", Config.CoreSettings.Notify.ErrorLength)
-                elseif Config.CoreSettings.Notify.Type == 'okok' then
-                    exports['okokNotify']:Alert('Cancelled!', ' Cancelled!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.UseSound)
-                elseif Config.CoreSettings.Notify.Type == 'mythic' then
-                    exports['mythic_notify']:DoHudText('error', 'Cancelled!')
-                elseif Config.CoreSettings.Notify.Type == 'boii' then
-                    exports['boii_ui']:notify('Cancelled!', 'Cancelled!', 'error', Config.CoreSettings.Notify.ErrorLength)
+                else 
+                    busy = false
+                    LockInventory(false)
+                    ClearPedTasks(PlayerPedId())
+                    SendNotify("Action Cancelled!", 'success', 2000)
                 end
-            end)
-       else
-           if Config.CoreSettings.Notify.Type == 'qb' then
-                QBCore.Functions.Notify("You Cant Vape Without Juice!", "error", Config.CoreSettings.Notify.ErrorLength)
-            elseif Config.CoreSettings.Notify.Type == 'okok' then
-                exports['okokNotify']:Alert('Missing Items','You Cant Vape Without Juice!', Config.CoreSettings.Notify.ErrorLength, 'error', Config.CoreSettings.Notify.Sound) 
-            elseif Config.CoreSettings.Notify.Type == 'mythic' then
-                exports['mythic_notify']:DoHudText('error', 'You Cant Vape Without Juice!')
-            elseif Config.CoreSettings.Notify.Type == 'boii' then
-                exports['boii_ui']:notify('Missing Items', 'You Cant Vape Without Juice!', 'error', Config.CoreSettings.Notify.ErrorLength)
             end
+        else
+            SendNotify("You cant vape without juice or a vape!", 'error', 2500)
         end
     end)
 end)
@@ -343,12 +149,25 @@ end)
 
 --open smoking shop
 RegisterNetEvent("lusty94_smoking:client:openShop", function()
+    local smokingItems = { -- only relevant for qb-inventory - for ox_inventory edit the shop in server file
+        label = "Smoking Shop",
+        slots = 7,
+        items = {
+            [1] = { name = "redwoodpack",       price = 250, amount = 1000, info = {}, type = "item", slot = 1,},
+            [2] = { name = "yukonpack",         price = 250, amount = 1000, info = {}, type = "item", slot = 2,},
+            [3] = { name = "69brandpack",       price = 250, amount = 1000, info = {}, type = "item", slot = 3,},
+            [4] = { name = "debonairepack",     price = 250, amount = 1000, info = {}, type = "item", slot = 4,},
+            [5] = { name = "lighter",           price = 5,   amount = 1000, info = {}, type = "item", slot = 5,},
+            [6] = { name = "vape",              price = 25,  amount = 1000, info = {}, type = "item", slot = 6,},
+            [7] = { name = "vapejuice",         price = 25,  amount = 1000, info = {}, type = "item", slot = 7,},
+        },
+    }
     if ShopType == 'qb'then
-		TriggerServerEvent("inventory:server:OpenInventory", "shop", "SmokingShop", Config.InteractionLocations.Store.Items)
+		TriggerServerEvent("inventory:server:OpenInventory", "shop", "smokingShop", smokingItems)
 	elseif ShopType == 'jim' then
-		TriggerServerEvent("jim-shops:ShopOpen", "shop", "SmokingShop", Config.InteractionLocations.Store.Items)
+		TriggerServerEvent("jim-shops:ShopOpen", "shop", "smokingShop", smokingItems)
 	elseif ShopType == 'ox' then
-		print('ShopType is set to "ox" make sure you have added the required snippet from the readme file to ox_inventory/data/shops.lua as the target option is now controlled by ox_inventory')
+		exports.ox_inventory:openInventory('shop', { type = 'smokingShop' })
 	end
 end)
 
@@ -356,55 +175,55 @@ end)
 
 
 --target settings
-if TargetType == 'qb' then
-    exports['qb-target']:AddBoxZone("Store", Config.InteractionLocations.Store.Location.Location, Config.InteractionLocations.Store.Location.Height, Config.InteractionLocations.Store.Location.Width, {
-        name = "Store",
-        heading = Config.InteractionLocations.Store.Location.Heading,
-        debugPoly = Config.DebugPoly,
-        minZ = Config.InteractionLocations.Store.Location.MinZ,
-        maxZ = Config.InteractionLocations.Store.Location.MaxZ,
-    }, {
-        options = {
-            {
-                
-                event = "lusty94_smoking:client:openShop",
-                label = Config.InteractionLocations.Store.Location.Label,
-                icon = Config.InteractionLocations.Store.Location.Icon,
-            }
-        },
-        distance = 1.5,
-    })
-elseif TargetType == 'ox'  then
-    if ShopType == 'ox' then
-        print('ox target disabled for smoking shop boxzone - is now handled via ox_inventory - make sure you have added the required snippet from the readme file!')
-    else
-        exports.ox_target:addBoxZone({
-            coords = Config.InteractionLocations.Store.Location.Location,
-            size = Config.InteractionLocations.Store.Location.Size,
-            rotation = Config.InteractionLocations.Store.Location.Heading,
-            debug = Config.DebugPoly,
-            options = {
-                {
-                    name = 'Store',
-                    event = 'lusty94_smoking:client:openShop',
-                    label = Config.InteractionLocations.Store.Location.Label,
-                    icon = Config.InteractionLocations.Store.Location.Icon,
-                }
-            }
-        })
+CreateThread(function()
+    if Config.UseTargetShop then
+        for k,v in pairs(Config.InteractionLocations) do
+            if TargetType == 'qb' then
+                exports['qb-target']:AddBoxZone(v.Name, v.Coords, v.Width, v.Height, { name = v.Name, heading = v.Heading, debugPoly = Config.DebugPoly, minZ = v.MinZ, maxZ = v.MaxZ, }, { options = { { type = "client", event = v.Event, icon = v.Icon, label = v.Label, job = v.Job, item = v.Item, } }, distance = v.Distance, })
+            elseif TargetType =='ox' then
+                exports.ox_target:addBoxZone({
+                    coords = v.Coords, size = v.Size, rotation = v.Heading, debug = Config.DebugPoly, options = { { id = v.Name, item = v.Item, groups = v.Job, event = v.Event, label = v.Label, icon = v.Icon, distance = v.Distance, } }, })
+            elseif TargetType == 'custom' then
+                --insert your own custom target code here
+            end
+        end
+    end
+end)
+
+
+-- function to lock inventory to prevent exploits
+function LockInventory(toggle) -- big up to jim for how to do this
+	if toggle then
+        LocalPlayer.state:set("inv_busy", true, true) -- used by qb, ps and ox
+        --this is the old method below
+        --[[         
+        if InvType == 'qb' then
+            this is for the old method if using old qb and ox
+            TriggerEvent('inventory:client:busy:status', true) TriggerEvent('canUseInventoryAndHotbar:toggle', false)
+        elseif InvType == 'ox' then
+            LocalPlayer.state:set("inv_busy", true, true)
+        end         
+        ]]
+    else 
+        LocalPlayer.state:set("inv_busy", false, true) -- used by qb, ps and ox
+        --this is the old method below
+        --[[        
+        if InvType == 'qb' then
+            this is for the old method if using old qb and ox
+         TriggerEvent('inventory:client:busy:status', false) TriggerEvent('canUseInventoryAndHotbar:toggle', true)
+        elseif InvType == 'ox' then
+            LocalPlayer.state:set("inv_busy", false, true)
+        end        
+        ]]
     end
 end
 
 
-
-
-AddEventHandler('onResourceStop', function(resourceName) if resourceName ~= GetCurrentResourceName() then return end
-    if (GetCurrentResourceName() ~= resourceName) then        
-        return
-    end
-        exports['qb-target']:RemoveZone("Store")
-        print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>--^5Smoking V1.2.0 Stopped Successfully^5--<^3!^5>--^7')
+--dont touch
+AddEventHandler('onResourceStop', function(resource)
+	if resource == GetCurrentResourceName() then
+        busy = false
+        for k, v in pairs(Config.InteractionLocations) do if TargetType == 'qb' then exports['qb-target']:RemoveZone(v.Name) elseif TargetType == 'ox' then exports.ox_target:removeZone(v.Name) end end
+        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Smoking V2.0.0 Stopped Successfully ^5--<^3!^5>--^7')
+	end
 end)
-
-
-

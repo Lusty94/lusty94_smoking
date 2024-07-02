@@ -14,50 +14,43 @@ Config = {}
 -- Below you can change multiple options to suit your server needs.
 
 
-Config.DebugPoly = false
-
-
-
 Config.Blips = {
     {title = 'Smoking Shop', colour = 5, id = 648, coords = vector3(172.19, -1336.0, 29.3), scale = 0.7, useblip = true}, -- BLIP FOR SMOKING SHOP
 }
 
 
 Config.CoreSettings = {
+    EventNames = {
+        HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
+    },
     Notify = {
-        Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify and boii_ui notify
+        Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify, boii_ui notify and ox_lib notify,
         --use 'qb' for default qb-core notify
         --use 'okok' for okokNotify
         --use 'mythic' for mythic_notify
         --use 'boii' for boii_ui notify
-        UseSound = true, -- uses sound for okokNotify
-        PrimaryLength = 2500, -- primary notification length
-        SuccessLength = 2500, -- success notification length
-        ErrorLength = 2500, -- error notification length
+        --use 'ox' for ox_lib notify
     },
     Target = {
         Type = 'qb', -- support for qb-target and ox_target
         -- use 'qb' for qb-target
         --use 'ox' for ox_target
-    },
-    ProgressBar = {
-        OpenPack = 5000, -- time it takes in MS to open pack of cigs
-        SmokeCig = 10000, -- time it takes in MS to smoke cigs
-        SmokeVape = 10000, -- time it takes in MS to smoke a vape
-    },
-    Shop = {
-        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops - IF USING OX INVENTORY YOU MUST CREATE YOUR OWN SHOP INSIDE OX_INVENTORY TO ACCESS THE SUPPLIES STORE USING THE SNIPPET PROVIDED IN THE README FILE
-        --use 'qb' for qb-shops
-        --use 'jim' for jim-shops
-        --use 'ox' for ox_inventory shops
-    },
+    },    
     Inventory = { --support for qb-inventory and ox_inventory
         Type = 'qb',
         --use 'qb' for qb-inventory
         --use 'ox' for ox_inventory
     },
-    EventNames = {
-        HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
+    Shop = {
+        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops
+        --use 'qb' for qb-shops
+        --use 'jim' for jim-shops
+        --use 'ox' for ox_inventory shops
+    },
+    Timers = {
+        OpenPack = 5000, -- time it takes in MS to open pack of cigs
+        SmokeCig = 10000, -- time it takes in MS to smoke cigs
+        SmokeVape = 10000, -- time it takes in MS to smoke a vape
     },
     Effects = {
 
@@ -79,33 +72,16 @@ Config.CoreSettings = {
     },
 }
 
+Config.DebugPoly = false -- debugs polyzones if using target locations for shops
+Config.UseTargetShop = true -- if set to true it creates target zones for players to purchase packs of cigs from - set to false if you have your own methods of getting the cig packs
 
-Config.InteractionLocations = {-- if using ox_inventory you can ignore this section but make sure you have included the ox_inventory shops snippet found in the readme file to be able to obtain the items
-    Store = {
-        Location = {
-            Location = vector3(170.03, -1337.09, 29.3), -- location of boxzone
-            Width = 1.5, --width of boxzone
-            Height = 1.5, -- height of boxzone
-            Heading = 100, -- heading of boxzone
-            MinZ = 28.5, -- minz of boxzone
-            MaxZ = 31, -- maxz of boxzone
-            Icon = 'fa-solid fa-smoking', -- icon for target
-            Label = 'Open Smoking Shop', -- label for target
-            Size = vec3(1.5,1.5,3), -- ONLY USED FOR OX_TARGET
-        },
-        Items = {
-            label = "Smoking Shop",
-            slots = 7,
-            items = {
-                [1] = { name = "redwoodpack", price = 250, amount = 100, info = {}, type = "item", slot = 1,},
-                [2] = { name = "yukonpack", price = 250, amount = 100, info = {}, type = "item", slot = 2,},
-                [3] = { name = "69brandpack", price = 250, amount = 100, info = {}, type = "item", slot = 3,},
-                [4] = { name = "debonairepack", price = 250, amount = 100, info = {}, type = "item", slot = 4,},
-                [5] = { name = "lighter", price = 5, amount = 100000, info = {}, type = "item", slot = 5,},
-                [6] = { name = "vape", price = 25, amount = 100, info = {}, type = "item", slot = 6,},
-                [7] = { name = "vapejuice", price = 25, amount = 100, info = {}, type = "item", slot = 7,},
-            },
-        },
-    },
+Config.InteractionLocations = { --name must be unique, coords is location, size is for ox target only, width is width of zone, height is height of zone, heading is direction, minZ is minZ of zone, maxZ is maxZ of zone, icon is target icon, label is target label, item is required item to target zone, job is required job to target zone leave as nil if not needed, distance is target distance
+    { Name = 'shop1', Coords = vector3(170.03, -1337.09, 29.3), Size = vec3(1.5,1.5,3), Width = 1.5, Height = 1.5, Heading = 100, MinZ = 28.5, MaxZ = 31, Icon = 'fa-solid fa-smoking', Label = 'Open Smoking Shop', Item = nil, Job = nil, Distance = 2.0, Event = 'lusty94_smoking:client:openShop',},
 }
 
+Config.SmokingItems = { -- names of cig packets
+    ["redwoodpack"],
+    ["debonairepack"],
+    ["sixtyninepack"],
+    ["yukonpack"],
+}

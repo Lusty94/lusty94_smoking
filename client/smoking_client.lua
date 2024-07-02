@@ -72,7 +72,7 @@ end)
 
 --smoke cig
 RegisterNetEvent('lusty94_smoking:client:SmokeCig', function()
-    QBCore.Functions.TriggerCallback('lusty94_smoking:get:CigPacks', function(HasItems)  
+    QBCore.Functions.TriggerCallback('lusty94_smoking:get:Cigs', function(HasItems)  
         if HasItems then
             if busy then
                 SendNotify("You Are Already Doing Something!", 'error', 2000)

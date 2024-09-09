@@ -52,16 +52,18 @@ RegisterNetEvent('lusty94_smoking:server:OpenPack', function(item)
     end
     if not cigItem then return end
     if InvType == 'qb' then
-        Player.Functions.RemoveItem(cigItem, 1)
-        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items[cigItem], "remove")
-        Player.Functions.AddItem('cigs', 20)
-        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['cigs'], "add", 20)
+        if exports['qb-inventory']:RemoveItem(src, cigItem, 1, nil, nil, nil) then
+            TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items[cigItem], "remove")
+            exports['qb-inventory']:AddItem(src, 'cigs', 20, nil, nil, nil)
+            TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items['cigs'], "add", 20)
+        end
     elseif InvType == 'ox' then
-        if exports.ox_inventory:CanCarryItem(src, "cigs", 20) then
-            exports.ox_inventory:RemoveItem(src, cigItem, 1)
-            exports.ox_inventory:AddItem(src, 'cigs', 20)
-        else
-            SendNotify(src,"You Can\'t Carry Anymore of This Item!", 'error', 2000)
+        if exports.ox_inventory:RemoveItem(src, cigItem, 1) then
+            if exports.ox_inventory:CanCarryItem(src, "cigs", 20) then
+                exports.ox_inventory:AddItem(src, 'cigs', 20)
+            else
+                SendNotify(src,"You Can\'t Carry Anymore of This Item!", 'error', 2000)
+            end
         end
     end
 end)
@@ -73,9 +75,9 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:CigPacks', function(source,
     local Ply = QBCore.Functions.GetPlayer(src)
     local pack1 = Ply.Functions.GetItemByName("redwoodpack")
     local pack2 = Ply.Functions.GetItemByName("debonairepack")
-    local pack3 = Ply.Functions.GetItemByName("69brandpack")
+    local pack3 = Ply.Functions.GetItemByName("sixtyninepack")
     local pack4 = Ply.Functions.GetItemByName("yukonpack")
-    if pack1 or pack2 or pack3 or pack4 then
+    if pack1 and pack1.amount >= 1 or pack2 and pack2.amount >= 1 or pack3 and pack3.amount >= 1 or pack4 and pack4.amount >= 1 then
         cb(true)
     else
         cb(false)
@@ -89,7 +91,7 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:Cigs', function(source, cb)
     local Ply = QBCore.Functions.GetPlayer(src)
     local cig = Ply.Functions.GetItemByName("cigs")
     local lighter = Ply.Functions.GetItemByName("lighter")
-    if cig  and lighter  then
+    if cig and cig.amount >=1 and lighter and lighter.amount >= 1 then
         cb(true)
     else
         cb(false)
@@ -101,7 +103,7 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:Vape', function(source, cb)
     local Ply = QBCore.Functions.GetPlayer(src)
     local vape = Ply.Functions.GetItemByName("vape")
     local juice = Ply.Functions.GetItemByName("vapejuice")
-    if vape and juice then
+    if vape and vape.amount >=1 and juice and juice.amount >= 1 then
         cb(true)
     else
         cb(false)
@@ -114,12 +116,12 @@ RegisterNetEvent('lusty94_smoking:server:SmokeVape', function()
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
     local chance = math.random(1,100)
-    local chance1 = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
-
-    if chance1 >= chance then
+    local remove = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
+    if remove >= chance then
         if InvType == 'qb' then
-            Player.Functions.RemoveItem("vapejuice", 1)
-            TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vapejuice"], "remove")
+            if exports['qb-inventory']:RemoveItem(src, 'vapejuice', 1, nil, nil, nil) then
+                TriggerClientEvent("qb-inventory:client:ItemBox", src, QBCore.Shared.Items["vapejuice"], "remove")
+            end
         elseif InvType == 'ox' then
             exports.ox_inventory:RemoveItem(src,"vapejuice", 1)
         end
@@ -131,25 +133,50 @@ RegisterNetEvent('lusty94_smoking:server:SmokeCig', function()
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
     if InvType == 'qb' then
-        Player.Functions.RemoveItem("cigs", 1)
-        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "remove")
+        if exports['qb-inventory']:RemoveItem(src, 'cigs', 1, nil, nil, nil) then
+            TriggerClientEvent("qb-inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "remove")
+        end
     elseif InvType == 'ox' then
         exports.ox_inventory:RemoveItem(src,"cigs", 1)
     end
 end)
 
---smoking shop
+
+RegisterNetEvent('lusty94_smoking:server:openShop', function()
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local smokingShop = {
+        { name = "redwoodpack",      price = 250, amount = 100, info = {}, type = "item", slot = 1,}, 
+        { name = "debonairepack",    price = 250, amount = 100, info = {}, type = "item", slot = 2,},
+        { name = "sixtyninepack",    price = 250, amount = 100, info = {}, type = "item", slot = 3,},
+        { name = "yukonpack",        price = 250, amount = 100, info = {}, type = "item", slot = 4,},
+        { name = "vape",             price = 100, amount = 100, info = {}, type = "item", slot = 5,},
+        { name = "vapejuice",        price = 50,  amount = 100, info = {}, type = "item", slot = 6,},
+        { name = "lighter",          price = 5,   amount = 100, info = {}, type = "item", slot = 7,},
+    }
+    exports['qb-inventory']:CreateShop({
+        name = 'smokingShop',
+        label = 'Smoking Shop',
+        slots = 7,
+        items = smokingShop
+    })
+    if Player then
+        exports['qb-inventory']:OpenShop(source, 'smokingShop')
+    end
+end)
+
+--smoking shop for ox_inventory
 function smokingShop()
     exports.ox_inventory:RegisterShop('smokingShop', {
         name = 'Smoking Shop',
         inventory = {
-            { name = 'redwoodpack', price = 250 },
-            { name = 'yukonpack', price = 250 },
-            { name = 'sixtyninepack', price = 250 },
-            { name = 'debonairepack', price = 250 },
-            { name = 'lighter', price = 5 },
-            { name = 'vape', price = 25 },
-            { name = 'vapejuice', price = 25 },
+            { name = 'redwoodpack',     price = 250 },
+            { name = 'yukonpack',       price = 250 },
+            { name = 'sixtyninepack',   price = 250 },
+            { name = 'debonairepack',   price = 250 },
+            { name = 'vape',            price = 100 },
+            { name = 'vapejuice',       price = 50 },
+            { name = 'lighter',         price = 5 },
         },
     })
 end

@@ -14,11 +14,6 @@ Config = {}
 -- Below you can change multiple options to suit your server needs.
 
 
-Config.Blips = {
-    {title = 'Smoking Shop', colour = 5, id = 648, coords = vector3(172.19, -1336.0, 29.3), scale = 0.7, useblip = true}, -- BLIP FOR SMOKING SHOP
-}
-
-
 Config.CoreSettings = {
     EventNames = {
         HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
@@ -41,16 +36,10 @@ Config.CoreSettings = {
         --use 'qb' for qb-inventory
         --use 'ox' for ox_inventory
     },
-    Shop = {
-        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops
-        --use 'qb' for qb-shops
-        --use 'jim' for jim-shops
-        --use 'ox' for ox_inventory shops
-    },
     Timers = {
         OpenPack = 5000, -- time it takes in MS to open pack of cigs
-        SmokeCig = 10000, -- time it takes in MS to smoke cigs
-        SmokeVape = 10000, -- time it takes in MS to smoke a vape
+        SmokeCig = 20000, -- time it takes in MS to smoke cigs
+        SmokeVape = 20000, -- time it takes in MS to smoke a vape
     },
     Effects = {
 
@@ -72,11 +61,28 @@ Config.CoreSettings = {
     },
 }
 
+Config.Blips = {
+    {title = 'Smoking Shop', colour = 5, id = 648, coords = vector3(172.19, -1336.0, 29.3), scale = 0.7, useblip = true}, -- BLIP FOR SMOKING SHOP
+}
+
 Config.DebugPoly = false -- debugs polyzones if using target locations for shops
 Config.UseTargetShop = true -- if set to true it creates target zones for players to purchase packs of cigs from - set to false if you have your own methods of getting the cig packs
 
 Config.InteractionLocations = { --name must be unique, coords is location, size is for ox target only, width is width of zone, height is height of zone, heading is direction, minZ is minZ of zone, maxZ is maxZ of zone, icon is target icon, label is target label, item is required item to target zone, job is required job to target zone leave as nil if not needed, distance is target distance
-    { Name = 'shop1', Coords = vector3(170.03, -1337.09, 29.3), Size = vec3(1.5,1.5,3), Width = 1.5, Height = 1.5, Heading = 100, MinZ = 28.5, MaxZ = 31, Icon = 'fa-solid fa-smoking', Label = 'Open Smoking Shop', Item = nil, Job = nil, Distance = 2.0, Event = 'lusty94_smoking:client:openShop',},
+    { 
+        Name = 'shop1', 
+        Coords = vector3(170.03, -1337.09, 29.3), 
+        Size = vec3(1.5,1.5,3), 
+        Width = 1.5, 
+        Height = 1.5, 
+        Heading = 100,
+        Icon = 'fa-solid fa-smoking', 
+        Label = 'Open Smoking Shop', 
+        Item = nil, 
+        Job = nil, 
+        Distance = 2.0, 
+        Event = 'lusty94_smoking:client:openShop',
+    },
 }
 
 Config.SmokingItems = { -- names of cig packets

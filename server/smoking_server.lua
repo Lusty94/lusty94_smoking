@@ -102,7 +102,13 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:Vape', function(source, cb)
     local src = source
     local Ply = QBCore.Functions.GetPlayer(src)
     local vape = Ply.Functions.GetItemByName("vape")
-    local juice = Ply.Functions.GetItemByName("vapejuice")
+    local juice = nil
+
+    for _, v in pairs(Config.Juices) do
+        if juice then break end
+        juice = Ply.Functions.GetItemByName(v)
+    end
+
     if vape and vape.amount >=1 and juice and juice.amount >= 1 then
         cb(true)
     else
@@ -119,11 +125,23 @@ RegisterNetEvent('lusty94_smoking:server:SmokeVape', function()
     local remove = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
     if remove >= chance then
         if InvType == 'qb' then
-            if exports['qb-inventory']:RemoveItem(src, 'vapejuice', 1, nil, nil, nil) then
-                TriggerClientEvent("qb-inventory:client:ItemBox", src, QBCore.Shared.Items["vapejuice"], "remove")
+            local removed = false
+
+            for i, v in pairs(Config.Juices) do
+                removed = exports['qb-inventory']:RemoveItem(src, v, 1, nil, nil, nil)
+                if removed then
+                    TriggerClientEvent("qb-inventory:client:ItemBox", src, QBCore.Shared.Items[v], "remove")
+                    break
+                end
             end
         elseif InvType == 'ox' then
-            exports.ox_inventory:RemoveItem(src,"vapejuice", 1)
+            local removed = false
+
+            for i, v in pairs(Config.Juices) do
+                if removed then break end
+
+                removed = exports.ox_inventory:RemoveItem(src, v, 1)
+            end
         end
     end
 end)

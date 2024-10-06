@@ -91,3 +91,7 @@ Config.SmokingItems = { -- names of cig packets
     ["sixtyninepack"],
     ["yukonpack"],
 }
+
+Config.Juices = {
+    'vapejuice',
+}

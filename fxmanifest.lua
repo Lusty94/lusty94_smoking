@@ -6,9 +6,9 @@ author 'Lusty94'
 
 name "lusty94_smoking"
 
-description 'Smoking Activity Script For QB-Core'
+description 'Simple Smoking & Vaping Script For QB-Core'
 
-version '2.0.1'
+version '2.1.0'
 
 lua54 'yes'
 

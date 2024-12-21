@@ -19,11 +19,10 @@ Config.CoreSettings = {
         HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
     },
     Notify = {
-        Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify, boii_ui notify and ox_lib notify,
+        Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify and ox_lib notify,
         --use 'qb' for default qb-core notify
         --use 'okok' for okokNotify
         --use 'mythic' for mythic_notify
-        --use 'boii' for boii_ui notify
         --use 'ox' for ox_lib notify
     },
     Target = {
@@ -61,8 +60,15 @@ Config.CoreSettings = {
     },
 }
 
-Config.Blips = {
-    {title = 'Smoking Shop', colour = 5, id = 648, coords = vector3(172.19, -1336.0, 29.3), scale = 0.7, useblip = true}, -- BLIP FOR SMOKING SHOP
+Config.Blips = { -- if using the target zones for a smoking shop then you can enabled a blip for the location here
+    {
+        useblip = true,
+        title = 'Smoking Shop',
+        colour = 5,
+        id = 648,
+        coords = vector3(172.19, -1336.0, 29.3),
+        scale = 0.7,
+    },
 }
 
 Config.DebugPoly = false -- debugs polyzones if using target locations for shops
@@ -72,16 +78,13 @@ Config.InteractionLocations = { --name must be unique, coords is location, size 
     { 
         Name = 'shop1', 
         Coords = vector3(170.03, -1337.09, 29.3), 
-        Size = vec3(1.5,1.5,3), 
+        Heading = 100,
         Width = 1.5, 
         Height = 1.5, 
-        Heading = 100,
+        Size = vec3(1.5,1.5,3), --for ox_target only
         Icon = 'fa-solid fa-smoking', 
         Label = 'Open Smoking Shop', 
-        Item = nil, 
-        Job = nil, 
         Distance = 2.0, 
-        Event = 'lusty94_smoking:client:openShop',
     },
 }
 
@@ -90,4 +93,46 @@ Config.SmokingItems = { -- names of cig packets
     ["debonairepack"],
     ["sixtyninepack"],
     ["yukonpack"],
+}
+
+
+Config.Animations = {
+    OpenCigs = {
+        AnimDict = 'amb@prop_human_parking_meter@female@base',
+        Anim = 'base_female',
+        Flag = 49,
+        Prop = 'v_res_tt_cigs01',
+        Bone = 57005,
+        Pos = vec3(0.14, 0.01, -0.03),
+        Rot = vec3(2.0, 68.0, -32.0),
+    },
+    SmokeCigs = {
+        AnimDict = 'amb@world_human_aa_smoke@male@idle_a',
+        Anim = 'idle_c',
+        Flag = 49,
+        Prop = 'prop_cs_ciggy_01',
+        Bone = 28422,
+        Pos = vec3(0.0, 0.0, 0.0),
+        Rot = vec3(0.0, 0.0, 0.0),
+    },
+    SmokeVape = {
+        AnimDict = 'amb@world_human_smoking@male@male_b@base',
+        Anim = 'base',
+        Flag = 49,
+        Prop = 'ba_prop_battle_vape_01',
+        Bone = 28422,
+        Pos = vec3(-0.029, 0.007, -0.005),
+        Rot = vec3(91.0, 270.0, -360.0),
+    },
+}
+
+
+Config.Language = {
+    Notifications = {
+        Busy = 'You are already doing something!',
+        Cancelled = 'Action cancelled!',
+        MissingItem = 'You are missing items!',
+        NoLighter = 'You are missing a ligher!',
+        NoJuice = 'You cant vape without juice... or a vape!',
+    },
 }

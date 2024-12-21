@@ -21,52 +21,50 @@ local function SendNotify(src, msg, type, time, title)
     end
 end
 
-QBCore.Functions.CreateUseableItem("cigs", function(source, item)
-    TriggerClientEvent("lusty94_smoking:client:SmokeCig", source)
-end)
+--remove items
+local function removeItem(src, item, amount)
+    if InvType == 'qb' then
+        if exports['qb-inventory']:RemoveItem(src, item, amount, false, false, false) then
+            TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items[item], 'remove', amount)
+        end
+    elseif InvType == 'ox' then
+        exports.ox_inventory:RemoveItem(src, item, amount)
+    end
+end
 
-QBCore.Functions.CreateUseableItem("vape", function(source, item)
-    TriggerClientEvent("lusty94_smoking:client:SmokeVape", source)
-end)
+--add items
+local function addItem(src, item, amount)
+    if InvType == 'qb' then
+        if exports['qb-inventory']:AddItem(src, item, amount, false, false, false) then
+            TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items[item], 'add', amount)
+        end
+    elseif InvType == 'ox' then
+        if exports.ox_inventory:CanCarryItem(src, item, amount) then
+            exports.ox_inventory:AddItem(src, item, amount)
+        else
+            SendNotify(src, Config.Language.Notifications.CantCarry, 'error', 5000)
+        end
+    end
+end
 
 
 
---useable items for smoking
+local smokeItems = {
+    { name = 'cigs', event = 'lusty94_smoking:client:SmokeCig'},
+    { name = 'vape', event = 'lusty94_smoking:client:SmokeVape'},
+}
+
+for k,v in pairs(smokeItems) do
+    QBCore.Functions.CreateUseableItem(v.name, function(source, item)
+        TriggerClientEvent(v.event, source)
+    end)
+end
+
 for k,_ in pairs(Config.SmokingItems) do
     QBCore.Functions.CreateUseableItem(k, function(source, item)
         TriggerClientEvent("lusty94_smoking:client:OpenPack", source, item.name)
     end)
 end
-
---smoke cig
-RegisterNetEvent('lusty94_smoking:server:OpenPack', function(item)
-    local src = source
-    local Player = QBCore.Functions.GetPlayer(source)
-    if not Player then return end
-    local cigItem = nil
-    for k in pairs(Config.SmokingItems) do
-        if k == item then
-            cigItem = k
-            break
-        end
-    end
-    if not cigItem then return end
-    if InvType == 'qb' then
-        if exports['qb-inventory']:RemoveItem(src, cigItem, 1, nil, nil, nil) then
-            TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items[cigItem], "remove")
-            exports['qb-inventory']:AddItem(src, 'cigs', 20, nil, nil, nil)
-            TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items['cigs'], "add", 20)
-        end
-    elseif InvType == 'ox' then
-        if exports.ox_inventory:RemoveItem(src, cigItem, 1) then
-            if exports.ox_inventory:CanCarryItem(src, "cigs", 20) then
-                exports.ox_inventory:AddItem(src, 'cigs', 20)
-            else
-                SendNotify(src,"You Can\'t Carry Anymore of This Item!", 'error', 2000)
-            end
-        end
-    end
-end)
 
 
 
@@ -91,7 +89,7 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:Cigs', function(source, cb)
     local Ply = QBCore.Functions.GetPlayer(src)
     local cig = Ply.Functions.GetItemByName("cigs")
     local lighter = Ply.Functions.GetItemByName("lighter")
-    if cig and cig.amount >=1 and lighter and lighter.amount >= 1 then
+    if cig and cig.amount >= 1 and lighter and lighter.amount >= 1 then
         cb(true)
     else
         cb(false)
@@ -103,7 +101,7 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:Vape', function(source, cb)
     local Ply = QBCore.Functions.GetPlayer(src)
     local vape = Ply.Functions.GetItemByName("vape")
     local juice = Ply.Functions.GetItemByName("vapejuice")
-    if vape and vape.amount >=1 and juice and juice.amount >= 1 then
+    if vape and vape.amount >= 1 and juice and juice.amount >= 1 then
         cb(true)
     else
         cb(false)
@@ -111,37 +109,48 @@ QBCore.Functions.CreateCallback('lusty94_smoking:get:Vape', function(source, cb)
 end)
 
 
-RegisterNetEvent('lusty94_smoking:server:SmokeVape', function()
+--sopen cig packets
+RegisterNetEvent('lusty94_smoking:server:OpenPack', function(item)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
-    if not Player then return end
-    local chance = math.random(1,100)
-    local remove = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
-    if remove >= chance then
-        if InvType == 'qb' then
-            if exports['qb-inventory']:RemoveItem(src, 'vapejuice', 1, nil, nil, nil) then
-                TriggerClientEvent("qb-inventory:client:ItemBox", src, QBCore.Shared.Items["vapejuice"], "remove")
-            end
-        elseif InvType == 'ox' then
-            exports.ox_inventory:RemoveItem(src,"vapejuice", 1)
+    local Player = QBCore.Functions.GetPlayer(source)
+    local cigItem = nil
+    for k in pairs(Config.SmokingItems) do
+        if k == item then
+            cigItem = k
+            break
         end
+    end
+    if not cigItem then return end
+    if Player then
+        removeItem(src, cigItem, 1)
+        Wait(250)
+        addItem(src, 'cigs', 20)
     end
 end)
 
+--smoke cig
 RegisterNetEvent('lusty94_smoking:server:SmokeCig', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    if not Player then return end
-    if InvType == 'qb' then
-        if exports['qb-inventory']:RemoveItem(src, 'cigs', 1, nil, nil, nil) then
-            TriggerClientEvent("qb-inventory:client:ItemBox", src, QBCore.Shared.Items["cigs"], "remove")
-        end
-    elseif InvType == 'ox' then
-        exports.ox_inventory:RemoveItem(src,"cigs", 1)
+    if Player then
+        removeItem(src, 'cigs', 1)
     end
 end)
 
+--smoke vape
+RegisterNetEvent('lusty94_smoking:server:SmokeVape', function()
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local chance = math.random(1,100)
+    local remove = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
+    if Player then
+        if remove >= chance then
+            removeItem(src, 'vapejuice', 1)
+        end
+    end
+end)
 
+--qb inventory shop
 RegisterNetEvent('lusty94_smoking:server:openShop', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
@@ -165,46 +174,44 @@ RegisterNetEvent('lusty94_smoking:server:openShop', function()
     end
 end)
 
---smoking shop for ox_inventory
-function smokingShop()
-    exports.ox_inventory:RegisterShop('smokingShop', {
-        name = 'Smoking Shop',
-        inventory = {
-            { name = 'redwoodpack',     price = 250 },
-            { name = 'yukonpack',       price = 250 },
-            { name = 'sixtyninepack',   price = 250 },
-            { name = 'debonairepack',   price = 250 },
-            { name = 'vape',            price = 100 },
-            { name = 'vapejuice',       price = 50 },
-            { name = 'lighter',         price = 5 },
-        },
-    })
-end
-
-
--- dont touch this is for ox stashes and shops
+--ox_ivnentory shop
 AddEventHandler('onResourceStart', function(resourceName)
     if (GetCurrentResourceName() == resourceName) then
         if InvType == 'ox' then
-            print('^5--<^3!^5>-- ^7| Lusty94_Smoking |^5 ^5--<^3!^5>--^7')
-            print('^5--<^3!^5>-- ^7| Inventory Type is set to ox |^5 ^5--<^3!^5>--^7')
-            print('^5--<^3!^5>-- ^7| Registering shops automatically |^5 ^5--<^3!^5>--^7')
-            smokingShop()
-            print('^5--<^3!^5>-- ^7| Shops registered successfully |^5 ^5--<^3!^5>--^7')
+            exports.ox_inventory:RegisterShop('smokingShop', {
+                name = 'Smoking Shop',
+                inventory = {
+                    { name = 'redwoodpack',     price = 250 },
+                    { name = 'yukonpack',       price = 250 },
+                    { name = 'sixtyninepack',   price = 250 },
+                    { name = 'debonairepack',   price = 250 },
+                    { name = 'vape',            price = 100 },
+                    { name = 'vapejuice',       price = 50 },
+                    { name = 'lighter',         price = 5 },
+                },
+            })
         end
     end
 end)
 
 
+--------------< VERSION CHECK >-------------
+
 local function CheckVersion()
-	PerformHttpRequest('https://raw.githubusercontent.com/Lusty94/UpdatedVersions/main/Smoking/version.txt', function(err, newestVersion, headers)
-		local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version')
-		if not newestVersion then print("Currently unable to run a version check.") return end
-		local advice = "^1You are currently running an outdated version^7, ^1please update^7"
-		if newestVersion:gsub("%s+", "") == currentVersion:gsub("%s+", "") then advice = '^6You are running the latest version.^7'
-		else print("^3Version Check^7: ^5Current^7: "..currentVersion.." ^5Latest^7: "..newestVersion.." "..advice) end
-	end)
+    PerformHttpRequest('https://raw.githubusercontent.com/Lusty94/UpdatedVersions/main/Smoking/version.txt', function(err, newestVersion, headers)
+        local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version')
+        if not newestVersion then
+            print('^1[Lusty94_Smoking]^7: Unable to fetch the latest version.')
+            return
+        end
+        newestVersion = newestVersion:gsub('%s+', '')
+        currentVersion = currentVersion and currentVersion:gsub('%s+', '') or "Unknown"
+        if newestVersion == currentVersion then
+            print(string.format('^2[Lusty94_Smoking]^7: ^6You are running the latest version.^7 (^2v%s^7)', currentVersion))
+        else
+            print(string.format('^2[Lusty94_Smoking]^7: ^3Your version: ^1v%s^7 | ^2Latest version: ^2v%s^7\n^1Please update to the latest version | Changelogs can be found in the support discord.^7', currentVersion, newestVersion))
+        end
+    end)
 end
+
 CheckVersion()
-
-

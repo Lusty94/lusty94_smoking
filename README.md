@@ -1,24 +1,22 @@
 ## Lusty94_Smoking
 
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-PLEASE MAKE SURE TO READ THIS ENTIRE FILE AS IT COVERS SOME IMPORTANT INFORMATION
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-======================================
-SCRIPT SUPPORT VIA DISCORD: https://discord.gg/BJGFrThmA8
-======================================
 
+
+## Script Support
+
+- Script support is via Discord for PAID resources ONLY: https://discord.gg/BJGFrThmA8
 
 
 
 # Installation
 
 - Make sure to download all dependencies and ensure they start BEFORE this script
-- Add items below to your core/shared/items.lua - ox_invnetory users place items snippet to inventory/data/items.lua
-- Add all images inside [images] folder to your inventory/html/images folder - ox_inventory users place images inside inventory/web/images
+- Add items below to your items.lua
+- Add all images inside [images] folder to your inventory/images folder
 
 
 

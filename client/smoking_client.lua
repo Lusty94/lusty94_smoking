@@ -42,161 +42,81 @@ CreateThread(function()
 end)
 
 
---open cig packs
-RegisterNetEvent('lusty94_smoking:client:OpenPack', function(itemName)
-    local label = ItemLabel(itemName)
-    if busy then
-        SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
-    else
-        QBCore.Functions.TriggerCallback('lusty94_smoking:get:CigPacks', function(HasItems)  
-            if HasItems then
-                busy = true
-                LockInventory(true)
-                if lib.progressCircle({ 
-                    duration = Config.CoreSettings.Timers.OpenPack, 
-                    label = 'Opening '..label, 
-                    position = 'bottom', 
-                    useWhileDead = false, 
-                    canCancel = true, 
-                    disable = { car = false, move = false, combat = false, mouse = false, }, 
-                    anim = { 
-                        dict = Config.Animations.OpenCigs.AnimDict,
-                        clip = Config.Animations.OpenCigs.Anim,
-                        flag = Config.Animations.OpenCigs.Flag,
-                    }, 
-                    prop = { 
-                        model = Config.Animations.OpenCigs.Prop,
-                        bone = Config.Animations.OpenCigs.Bone,
-                        pos = Config.Animations.OpenCigs.Pos,
-                        rot = Config.Animations.OpenCigs.Rot,
-                    },
-                }) then
-                    busy = false
-                    LockInventory(false)
-                    TriggerServerEvent("lusty94_smoking:server:OpenPack", itemName)
-                else 
-                    busy = false
-                    LockInventory(false)
-                    SendNotify(Config.Language.Notifications.Cancelled, 'error', 5000)
-                end
-            else
-                SendNotify(Config.Language.Notifications.MissingItems, 'error', 5000)
-            end
-        end)
-    end
-end)
 
---smoke cig
-RegisterNetEvent('lusty94_smoking:client:SmokeCig', function()
+
+--use smoking item
+function useSmokingItems(itemName)
     local playerPed = PlayerPedId()
-    local label = ItemLabel('cigs')
-    if busy then
-        SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+    local item = Config.Consumables[itemName]
+    if item.returnItem == true then
+        TriggerServerEvent('lusty94_smoking:server:returnItems', item.returned, item.amountReturned)
+    end
+    if item.stress > 0 then
+        TriggerServerEvent('hud:server:RelieveStress', item.stress)
+    end
+    if item.armour > 0 then
+        SetPedArmour(playerPed, GetPedArmour(playerPed) + item.armour)
+    end
+    if item.damageHealth > 0 then
+        SetEntityHealth(playerPed, GetEntityHealth(playerPed) - item.damageHealth)
+    end
+    if itemName == 'vape' then -- if changing vape item name make sure to change it here also
+        TriggerServerEvent('lusty94_smoking:server:UseVapeJuice') -- triggers chance to remove vape juice on use
     else
-        QBCore.Functions.TriggerCallback('lusty94_smoking:get:Cigs', function(HasItems)  
-            if HasItems then
+        TriggerServerEvent('lusty94_smoking:server:UseItem', itemName) -- normal item removal
+    end
+    Wait(500) -- wait timer just to stop the rats that try spam items or remove them from inventory before declaring busy as false and unlocking inventory again
+    busy = false
+    LockInventory(false)
+end
+
+--use smoking item
+RegisterNetEvent('lusty94_smoking:client:UseItem', function(itemName)
+    local item = Config.Consumables[itemName] 
+    if not item then return end
+    if busy then
+        SendNotify(Config.Language.Notifications.Busy, 'error', 2500)
+    else
+        QBCore.Functions.TriggerCallback('lusty94_smoking:server:hasItem', function(hasItem)
+            if hasItem then
                 busy = true
                 LockInventory(true)
-                if lib.progressCircle({ 
-                    duration = Config.CoreSettings.Timers.SmokeCig, 
-                    label = 'Smoking '..label, 
-                    position = 'bottom', 
-                    useWhileDead = false, 
-                    canCancel = true, 
-                    disable = { car = false, move = false, combat = false, mouse = false, }, 
-                    anim = { 
-                        dict = Config.Animations.SmokeCigs.AnimDict,
-                        clip = Config.Animations.SmokeCigs.Anim,
-                        flag = Config.Animations.SmokeCigs.Flag,
-                    }, 
-                    prop = { 
-                        model = Config.Animations.SmokeCigs.Prop,
-                        bone = Config.Animations.SmokeCigs.Bone,
-                        pos = Config.Animations.SmokeCigs.Pos,
-                        rot = Config.Animations.SmokeCigs.Rot,
+                if lib.progressCircle({
+                    duration = item.duration * 1000,
+                    label = item.label,
+                    position = 'bottom',
+                    canCancel = true,
+                    disable = {
+                        move = false,
+                        car = false,
+                        combat = false,
                     },
-                }) then
-                    TriggerServerEvent('lusty94_smoking:server:SmokeCig')
-                    if Config.CoreSettings.Effects.RemoveHealth then
-                        SetEntityHealth(playerPed, GetEntityHealth(playerPed) - Config.CoreSettings.Effects.HealthAmount)
-                    end
-                    if Config.CoreSettings.Effects.AddArmour then
-                        AddArmourToPed(playerPed, Config.CoreSettings.Effects.ArmourAmount)
-                    end
-                    if Config.CoreSettings.Effects.RemoveStress then
-                        TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
-                    end
+                    anim = {
+                        dict = item.dict,
+                        clip = item.anim,
+                        flag = item.flag,
+                    },
+                    prop = {
+                    
+                        model = item.prop,
+                        bone = item.bone,
+                        pos = item.pos,
+                        rot = item.rot,
+                        
+                    },
+                }) 
+                then
+                    useSmokingItems(itemName)
+                else
                     busy = false
                     LockInventory(false)
-                else 
-                    busy = false
-                    LockInventory(false)
-                    SendNotify(Config.Language.Notifications.Cancelled, 'error', 5000)
+                    SendNotify(Config.Language.Notifications.Cancelled, 'error', 2500)
                 end
-            else
-                SendNotify(Config.Language.Notifications.NoLighter, 'error', 5000)
             end
-        end)
+        end, itemName)
     end
 end)
 
-
-
-
-
---smoke vape
-RegisterNetEvent('lusty94_smoking:client:SmokeVape', function()
-    local playerPed = PlayerPedId()
-    local label = ItemLabel('vape')
-    if busy then
-        SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
-    else
-        QBCore.Functions.TriggerCallback('lusty94_smoking:get:Vape', function(HasItems)  
-            if HasItems then
-                busy = true
-                LockInventory(true)
-                if lib.progressCircle({ 
-                    duration = Config.CoreSettings.Timers.SmokeVape, 
-                    label = 'Smoking '..label, 
-                    position = 'bottom', 
-                    useWhileDead = false, 
-                    canCancel = true, 
-                    disable = { car = false, move = false, combat = false, mouse = false, }, 
-                    anim = { 
-                        dict = Config.Animations.SmokeVape.AnimDict,
-                        clip = Config.Animations.SmokeVape.Anim,
-                        flag = Config.Animations.SmokeVape.Flag,
-                    }, 
-                    prop = { 
-                        model = Config.Animations.SmokeVape.Prop,
-                        bone = Config.Animations.SmokeVape.Bone,
-                        pos = Config.Animations.SmokeVape.Pos,
-                        rot = Config.Animations.SmokeVape.Rot,
-                    },
-                }) then
-                    TriggerServerEvent('lusty94_smoking:server:SmokeVape')
-                    if Config.CoreSettings.Effects.AddHealth then
-                        SetEntityHealth(playerPed, GetEntityHealth(playerPed) + Config.CoreSettings.Effects.VapeHealthAmount)
-                    end
-                    if Config.CoreSettings.Effects.AddArmour then
-                        AddArmourToPed(playerPed, Config.CoreSettings.Effects.ArmourAmount)
-                    end
-                    if Config.CoreSettings.Effects.RemoveStress then
-                        TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
-                    end
-                    busy = false
-                    LockInventory(false)
-                else 
-                    busy = false
-                    LockInventory(false)
-                    SendNotify(Config.Language.Notifications.Cancelled, 'error', 5000)
-                end
-            else
-                SendNotify(Config.Language.Notifications.NoJuice, 'error', 5000)
-            end
-        end)
-    end
-end)
 
 
 
@@ -209,18 +129,8 @@ function openSmokingShop()
 	end
 end
 
---get the label of an item for progressCircle
-function ItemLabel(label)
-	if InvType == 'ox' then
-		local Items = exports['ox_inventory']:Items()
-		return Items[label]['label']
-    elseif InvType == 'qb' then
-		return QBCore.Shared.Items[label]['label']
-	end
-end
 
-
---target settings
+--target shop
 CreateThread(function()
     if Config.UseTargetShop then
         for k,v in pairs(Config.InteractionLocations) do
@@ -303,6 +213,6 @@ AddEventHandler('onResourceStop', function(resource)
                 end
             end
         end
-        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Smoking V2.1.0 Stopped Successfully ^5--<^3!^5>--^7')
+        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Smoking V2.1.1 Stopped Successfully ^5--<^3!^5>--^7')
 	end
 end)

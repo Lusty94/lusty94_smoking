@@ -2,13 +2,20 @@
 
 
 
-
-
-
-
 ## Script Support
 
-- Script support is via Discord for PAID resources ONLY: https://discord.gg/BJGFrThmA8
+- Script support is via Discord tickets for PAID resources ONLY: https://discord.gg/BJGFrThmA8
+- For free resources please use the gated channels instead
+
+
+
+## DEPENDENCIES
+
+- [qb-core](https://github.com/qbcore-framework/qb-core)
+- [qb-target](https://github.com/qbcore-framework/qb-target)
+- [qb-inventory](https://github.com/qbcore-framework/qb-inventory)
+- [ox_lib](https://github.com/overextended/ox_lib/releases/)
+
 
 
 
@@ -33,7 +40,8 @@
 
 	cigs 					= {name = 'cigs', 			 	  	  		    label = 'Cigarette', 				    weight = 200, 		type = 'item', 					image = 'cigs.png', 					unique = false, 	useable = true, 	shouldClose = true,   combinable = nil,   description = 'A Single Cigarette'},
 	vape 					= {name = 'vape', 			 	  	  		    label = 'Electronic Vape', 				weight = 200, 		type = 'item', 					image = 'vape.png', 					unique = false, 	useable = true, 	shouldClose = true,   combinable = nil,   description = 'An Electronic Vape'},
-	vapejuice 				= {name = 'vapejuice', 			 	  	  		label = 'Vape Juice', 				    weight = 200, 		type = 'item', 					image = 'vapejuice.png', 				unique = false, 	useable = true, 	shouldClose = true,   combinable = nil,   description = 'Vape Juice'},
+	vapejuice 				= {name = 'vapejuice', 			 	  	  		label = 'Vape Juice', 				    weight = 200, 		type = 'item', 					image = 'vapejuice.png', 				unique = false, 	useable = false, 	shouldClose = true,   combinable = nil,   description = 'Vape Juice'},
+	lighter 				= {name = 'lighter', 			 	  	  		label = 'Lighter', 				    weight = 200, 		type = 'item', 					image = 'lighter.png', 				unique = false, 	useable = false, 	shouldClose = true,   combinable = nil,   description = 'A lighter'},
 
 ```
 
@@ -115,6 +123,17 @@
 		description = "",
 		client = {
 			image = "vapejuice.png",
+		}
+	},
+
+    ["lighter"] = {
+		label = "Lighter",
+		weight = 200,
+		stack = true,
+		close = true,
+		description = "",
+		client = {
+			image = "lighter.png",
 		}
 	},
 

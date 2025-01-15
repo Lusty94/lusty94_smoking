@@ -15,9 +15,6 @@ Config = {}
 
 
 Config.CoreSettings = {
-    EventNames = {
-        HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
-    },
     Notify = {
         Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify and ox_lib notify,
         --use 'qb' for default qb-core notify
@@ -35,29 +32,6 @@ Config.CoreSettings = {
         --use 'qb' for qb-inventory
         --use 'ox' for ox_inventory
     },
-    Timers = {
-        OpenPack = 5000, -- time it takes in MS to open pack of cigs
-        SmokeCig = 20000, -- time it takes in MS to smoke cigs
-        SmokeVape = 20000, -- time it takes in MS to smoke a vape
-    },
-    Effects = {
-
-        --CIGARETTES ONLY
-        RemoveHealth = true, -- removes a small amount of health when the player smokes a cigarette
-        HealthAmount = math.random(1,5), -- if set to true then how much health does the player lose?
-
-        --VAPES ONLY
-        AddHealth = true, -- adds a small amount of health when the player smokes a vape
-        VapeHealthAmount = math.random(5,10), -- if set to true then how much health does the player gain?
-
-        --VAPES AND CIGARETTES
-        AddArmour = true, -- add armour from smoking
-        ArmourAmount = math.random(5,10), -- if set to true then how much armour does the player gain?
-
-        RemoveStress = true, -- removes stress from smoking
-        RemoveStressAmount = math.random(5,10), -- if set to true then how much stress relief does the player get?
-        
-    },
 }
 
 Config.Blips = { -- if using the target zones for a smoking shop then you can enabled a blip for the location here
@@ -71,68 +45,176 @@ Config.Blips = { -- if using the target zones for a smoking shop then you can en
     },
 }
 
-Config.DebugPoly = false -- debugs polyzones if using target locations for shops
-Config.UseTargetShop = true -- if set to true it creates target zones for players to purchase packs of cigs from - set to false if you have your own methods of getting the cig packs
+Config.DebugPoly = true -- displays zones if using target locations for shops
+Config.UseTargetShop = true -- if set to true this creates target zones for players to purchase smoking items - set to false if you have used your own methods of obtaining the items
 
-Config.InteractionLocations = { --name must be unique, coords is location, size is for ox target only, width is width of zone, height is height of zone, heading is direction, minZ is minZ of zone, maxZ is maxZ of zone, icon is target icon, label is target label, item is required item to target zone, job is required job to target zone leave as nil if not needed, distance is target distance
+Config.InteractionLocations = { 
+    --name must be unique
+    --coords is location
+    --size is for ox target only
+    --width is width of zone
+    --height is height of zone
+    --heading is direction
+    --icon is target icon
+    --label is target label
+    --distance is target distance
     { 
         Name = 'shop1', 
         Coords = vector3(170.03, -1337.09, 29.3), 
-        Heading = 100,
+        Size = vec3(1.5,1.5,3), --for ox_target only
         Width = 1.5, 
         Height = 1.5, 
-        Size = vec3(1.5,1.5,3), --for ox_target only
+        Heading = 100,
         Icon = 'fa-solid fa-smoking', 
         Label = 'Open Smoking Shop', 
         Distance = 2.0, 
     },
 }
 
-Config.SmokingItems = { -- names of cig packets
-    ["redwoodpack"],
-    ["debonairepack"],
-    ["sixtyninepack"],
-    ["yukonpack"],
+Config.Consumables = {
+    --<<!! IMPORTANT NOTES !!>>--
+
+    --["redwoodpack"] - this is the useable item name
+    --label - this is the label for progressCircle
+    --duration - in seconds the duration to use the item so 10 would be 10 seconds
+    --requiredItem = name of the item that is required to use this item
+    --requiredLabel = label of required item for notification
+    --returnItem - boolean value if the useable item should return something [packs return cigarettes]
+    --returned = item name to be returned for example 'cigs' are returned from the packets
+    --amountReturned = amount of returned item recieved for example 20 cigs from a pack
+    --dict = animation dict
+    --anim - animation name
+    --flags = animation flags
+    --prop = prop name for animation
+    --bone = bone index for animation
+    --pos = vec3 value for position of prop during animation
+    --rot = vec3 value for rotation of prop during animation
+    --stress = amount of stress reduction received from using item
+    --armour = amount of armour received from using item
+    --damageHealth = amount of health to be removed from using item
+
+    ["redwoodpack"] = {
+        label = 'Opening redwoods pack',
+        duration = 10,
+        requiredItem = nil,
+        requiredLabel = '',
+        returnItem = true,
+        returned = 'cigs',
+        amountReturned = 20,
+        dict = 'amb@prop_human_parking_meter@female@base',
+        anim = 'base_female',
+        flags = 49,
+        prop = 'v_ret_ml_cigs',
+        bone = 57005,
+        pos = vec3(0.14, 0.01, -0.03),
+        rot = vec3(2.0, 68.0, -32.0),
+        stress = 0,
+        armour = 0,
+        damageHealth = 0,
+    },
+    ["debonairepack"] = {
+        label = 'Opening debonaire pack',
+        duration = 10,
+        requiredItem = nil,
+        requiredLabel = '',
+        returnItem = true,
+        returned = 'cigs',
+        amountReturned = 20,
+        dict = 'amb@prop_human_parking_meter@female@base',
+        anim = 'base_female',
+        flags = 49,
+        prop = 'v_ret_ml_cigs3',
+        bone = 57005,
+        pos = vec3(0.14, 0.01, -0.03),
+        rot = vec3(2.0, 68.0, -32.0),
+        stress = 0,
+        armour = 0,
+        damageHealth = 0,
+    },
+    ["sixtyninepack"] = {
+        label = 'Opening sixty nine pack',
+        duration = 10,
+        requiredItem = nil,
+        requiredLabel = '',
+        returnItem = true,
+        returned = 'cigs',
+        amountReturned = 20,
+        dict = 'amb@prop_human_parking_meter@female@base',
+        anim = 'base_female',
+        flags = 49,
+        prop = 'p_cigar_pack_02_s',
+        bone = 57005,
+        pos = vec3(0.14, 0.01, -0.03),
+        rot = vec3(2.0, 68.0, -32.0),
+        stress = 0,
+        armour = 0,
+        damageHealth = 0,
+    },
+    ["yukonpack"] = {
+        label = 'Opening yukon pack',
+        duration = 10,
+        requiredItem = nil,
+        requiredLabel = '',
+        returnItem = true,
+        returned = 'cigs',
+        amountReturned = 20,
+        dict = 'amb@prop_human_parking_meter@female@base',
+        anim = 'base_female',
+        flags = 49,
+        prop = 'p_cigar_pack_02_s',
+        bone = 57005,
+        pos = vec3(0.14, 0.01, -0.03),
+        rot = vec3(2.0, 68.0, -32.0),
+        stress = 0,
+        armour = 0,
+        damageHealth = 0,
+    },
+    ["cigs"] = {
+        label = 'Smoking cigarette',
+        duration = 20,
+        requiredItem = 'lighter',
+        requiredLabel = 'Lighter',
+        returnItem = false,
+        returned = nil,
+        amountReturned = 0,
+        dict = 'amb@world_human_aa_smoke@male@idle_a',
+        anim = 'idle_c',
+        flags = 49,
+        prop = 'prop_cs_ciggy_01',
+        bone = 28422,
+        pos = vec3(0.0, 0.0, 0.0),
+        rot = vec3(0.0, 0.0, 0.0),
+        stress = 25,
+        armour = 10,
+        damageHealth = 5,
+    },
+    ["vape"] = {
+        label = 'Smoking vape',
+        duration = 20,
+        requiredItem = 'vapejuice',
+        requiredLabel = 'Vape Juice',
+        returnItem = false,
+        returned = nil,
+        amountReturned = 0,
+        dict = 'amb@world_human_smoking@male@male_b@base',
+        anim = 'base',
+        flags = 49,
+        prop = 'ba_prop_battle_vape_01',
+        bone = 28422,
+        pos = vec3(-0.029, 0.007, -0.005),
+        rot = vec3(91.0, 270.0, -360.0),
+        stress = 25,
+        armour = 10,
+        damageHealth = 0,
+    },
 }
 
 
-Config.Animations = {
-    OpenCigs = {
-        AnimDict = 'amb@prop_human_parking_meter@female@base',
-        Anim = 'base_female',
-        Flag = 49,
-        Prop = 'v_res_tt_cigs01',
-        Bone = 57005,
-        Pos = vec3(0.14, 0.01, -0.03),
-        Rot = vec3(2.0, 68.0, -32.0),
-    },
-    SmokeCigs = {
-        AnimDict = 'amb@world_human_aa_smoke@male@idle_a',
-        Anim = 'idle_c',
-        Flag = 49,
-        Prop = 'prop_cs_ciggy_01',
-        Bone = 28422,
-        Pos = vec3(0.0, 0.0, 0.0),
-        Rot = vec3(0.0, 0.0, 0.0),
-    },
-    SmokeVape = {
-        AnimDict = 'amb@world_human_smoking@male@male_b@base',
-        Anim = 'base',
-        Flag = 49,
-        Prop = 'ba_prop_battle_vape_01',
-        Bone = 28422,
-        Pos = vec3(-0.029, 0.007, -0.005),
-        Rot = vec3(91.0, 270.0, -360.0),
-    },
-}
 
 
 Config.Language = {
     Notifications = {
         Busy = 'You are already doing something!',
         Cancelled = 'Action cancelled!',
-        MissingItem = 'You are missing items!',
-        NoLighter = 'You are missing a ligher!',
-        NoJuice = 'You cant vape without juice... or a vape!',
     },
 }

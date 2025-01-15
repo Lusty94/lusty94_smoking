@@ -1,5 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local InvType = Config.CoreSettings.Inventory.Type
+local NotifyType = Config.CoreSettings.Notify.Type
 
 --notification function
 local function SendNotify(src, msg, type, time, title)
@@ -14,8 +15,6 @@ local function SendNotify(src, msg, type, time, title)
         TriggerClientEvent('okokNotify:Alert', src, title, msg, time, type, Config.CoreSettings.Notify.Sound)
     elseif NotifyType == 'mythic' then
         TriggerClientEvent('mythic_notify:client:SendAlert', src, { type = type, text = msg, style = { ['background-color'] = '#00FF00', ['color'] = '#FFFFFF' } })
-    elseif NotifyType == 'boii'  then
-        TriggerClientEvent('boii_ui:notify', src, title, msg, type, time)
     elseif NotifyType == 'ox' then 
         TriggerClientEvent('ox_lib:notify', src, ({ title = title, description = msg, length = time, type = type, style = 'default'}))
     end
@@ -47,108 +46,75 @@ local function addItem(src, item, amount)
     end
 end
 
-
-
-local smokeItems = {
-    { name = 'cigs', event = 'lusty94_smoking:client:SmokeCig'},
-    { name = 'vape', event = 'lusty94_smoking:client:SmokeVape'},
-}
-
-for k,v in pairs(smokeItems) do
-    QBCore.Functions.CreateUseableItem(v.name, function(source, item)
-        TriggerClientEvent(v.event, source)
-    end)
-end
-
-for k,_ in pairs(Config.SmokingItems) do
-    QBCore.Functions.CreateUseableItem(k, function(source, item)
-        TriggerClientEvent("lusty94_smoking:client:OpenPack", source, item.name)
+--useable items
+for itemName, _ in pairs(Config.Consumables) do
+    QBCore.Functions.CreateUseableItem(itemName, function(source, item)
+        TriggerClientEvent('lusty94_smoking:client:UseItem', source, item.name)
     end)
 end
 
 
-
-QBCore.Functions.CreateCallback('lusty94_smoking:get:CigPacks', function(source, cb)
+--callback for items and required items
+QBCore.Functions.CreateCallback('lusty94_smoking:server:hasItem', function(source, cb, itemName)
     local src = source
-    local Ply = QBCore.Functions.GetPlayer(src)
-    local pack1 = Ply.Functions.GetItemByName("redwoodpack")
-    local pack2 = Ply.Functions.GetItemByName("debonairepack")
-    local pack3 = Ply.Functions.GetItemByName("sixtyninepack")
-    local pack4 = Ply.Functions.GetItemByName("yukonpack")
-    if pack1 and pack1.amount >= 1 or pack2 and pack2.amount >= 1 or pack3 and pack3.amount >= 1 or pack4 and pack4.amount >= 1 then
-        cb(true)
-    else
-        cb(false)
-    end
-end)
-
-
-
-QBCore.Functions.CreateCallback('lusty94_smoking:get:Cigs', function(source, cb)
-    local src = source
-    local Ply = QBCore.Functions.GetPlayer(src)
-    local cig = Ply.Functions.GetItemByName("cigs")
-    local lighter = Ply.Functions.GetItemByName("lighter")
-    if cig and cig.amount >= 1 and lighter and lighter.amount >= 1 then
-        cb(true)
-    else
-        cb(false)
-    end
-end)
-
-QBCore.Functions.CreateCallback('lusty94_smoking:get:Vape', function(source, cb)
-    local src = source
-    local Ply = QBCore.Functions.GetPlayer(src)
-    local vape = Ply.Functions.GetItemByName("vape")
-    local juice = Ply.Functions.GetItemByName("vapejuice")
-    if vape and vape.amount >= 1 and juice and juice.amount >= 1 then
-        cb(true)
-    else
-        cb(false)
-    end
-end)
-
-
---sopen cig packets
-RegisterNetEvent('lusty94_smoking:server:OpenPack', function(item)
-    local src = source
-    local Player = QBCore.Functions.GetPlayer(source)
-    local cigItem = nil
-    for k in pairs(Config.SmokingItems) do
-        if k == item then
-            cigItem = k
-            break
+    local Player = QBCore.Functions.GetPlayer(src)
+    local item = Config.Consumables[itemName]
+    if item then
+        if item.requiredItem then
+            local requiredItem = Player.Functions.GetItemByName(item.requiredItem)         
+            if requiredItem then
+                cb(true)
+            else
+                SendNotify(src, 'You need a ' .. item.requiredLabel .. ' to use this!', 'error', 5000)    
+                cb(false)
+            end
+        else
+            cb(true)
         end
-    end
-    if not cigItem then return end
-    if Player then
-        removeItem(src, cigItem, 1)
-        Wait(250)
-        addItem(src, 'cigs', 20)
+    else
+        cb(false)       
     end
 end)
 
---smoke cig
-RegisterNetEvent('lusty94_smoking:server:SmokeCig', function()
+--use item
+RegisterNetEvent('lusty94_smoking:server:UseItem', function(itemName)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     if Player then
-        removeItem(src, 'cigs', 1)
+        removeItem(src, itemName, 1)
     end
 end)
 
---smoke vape
-RegisterNetEvent('lusty94_smoking:server:SmokeVape', function()
+--return item
+RegisterNetEvent('lusty94_smoking:server:returnItems', function(itemName, amount)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local chance = math.random(1,100)
-    local remove = 25 -- edit this value for the chance of juice to be removed when smoking a vape currently a 1 in 4 chance
     if Player then
-        if remove >= chance then
-            removeItem(src, 'vapejuice', 1)
+        addItem(src, itemName, amount)
+    end
+end)
+
+--use vape juice
+RegisterNetEvent('lusty94_smoking:server:UseVapeJuice', function(itemName, amount)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local chance = 25 -- 25% chance to remove vape juice upon use
+    local juice = 'vapejuice' -- if changing the name of vapejuice make sure to change it here also so it removes correctly
+    if Player then
+        if chance >= math.random(1,100) then
+            removeItem(src, juice, 1)
         end
     end
 end)
+
+
+
+
+
+
+
+
+
 
 --qb inventory shop
 RegisterNetEvent('lusty94_smoking:server:openShop', function()
